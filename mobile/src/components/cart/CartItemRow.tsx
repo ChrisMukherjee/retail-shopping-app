@@ -11,6 +11,7 @@ interface Props {
 export function CartItemRow({ item, onQuantityChange, onRemove }: Props) {
   const [qty, setQty] = useState(item.quantity);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const removingRef = useRef(false);
 
   useEffect(() => {
     if (!debounceRef.current) setQty(item.quantity);
@@ -25,6 +26,12 @@ export function CartItemRow({ item, onQuantityChange, onRemove }: Props) {
     }, 500);
   };
 
+  const handleRemove = () => {
+    if (removingRef.current) return;
+    removingRef.current = true;
+    onRemove();
+  };
+
   return (
     <View style={styles.row}>
       <View style={styles.info}>
@@ -32,7 +39,7 @@ export function CartItemRow({ item, onQuantityChange, onRemove }: Props) {
         <Text style={styles.price}>£{item.unitPrice.toFixed(2)} each</Text>
       </View>
       <View style={styles.controls}>
-        <TouchableOpacity style={styles.btn} onPress={() => qty > 1 ? handleChange(qty - 1) : onRemove()}>
+        <TouchableOpacity style={styles.btn} onPress={() => qty > 1 ? handleChange(qty - 1) : handleRemove()}>
           <Text style={styles.btnText}>−</Text>
         </TouchableOpacity>
         <Text style={styles.qty}>{qty}</Text>
@@ -42,7 +49,7 @@ export function CartItemRow({ item, onQuantityChange, onRemove }: Props) {
       </View>
       <View style={styles.right}>
         <Text style={styles.lineTotal}>£{(qty * item.unitPrice).toFixed(2)}</Text>
-        <TouchableOpacity onPress={onRemove}><Text style={styles.remove}>Remove</Text></TouchableOpacity>
+        <TouchableOpacity onPress={handleRemove}><Text style={styles.remove}>Remove</Text></TouchableOpacity>
       </View>
     </View>
   );
@@ -53,11 +60,11 @@ const styles = StyleSheet.create({
   info: { flex: 1, marginRight: 8 },
   name: { fontSize: 14, fontWeight: '600', color: '#111827' },
   price: { fontSize: 12, color: '#6B7280', marginTop: 2 },
-  controls: { flexDirection: 'row', alignItems: 'center' },
+  controls: { flexDirection: 'row', alignItems: 'center', width: 100, justifyContent: 'center' },
   btn: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#E5E7EB', alignItems: 'center', justifyContent: 'center' },
   btnText: { fontSize: 16, color: '#374151', lineHeight: 20 },
-  qty: { fontSize: 15, fontWeight: '600', marginHorizontal: 10, minWidth: 20, textAlign: 'center' },
-  right: { alignItems: 'flex-end', marginLeft: 8 },
+  qty: { fontSize: 15, fontWeight: '600', width: 36, textAlign: 'center' },
+  right: { alignItems: 'flex-end', marginLeft: 8, width: 80 },
   lineTotal: { fontSize: 14, fontWeight: '700', color: '#111827' },
   remove: { fontSize: 12, color: '#DC2626', marginTop: 4 },
 });
