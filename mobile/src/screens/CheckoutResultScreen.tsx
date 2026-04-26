@@ -19,7 +19,7 @@ export function CheckoutResultScreen({ navigation }: Props) {
   );
 
   const handleContinue = () => {
-    navigation.navigate('ProductList');
+    navigation.reset({ index: 0, routes: [{ name: 'ProductList' }] });
   };
 
   if (order) {
