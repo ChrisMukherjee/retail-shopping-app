@@ -49,16 +49,21 @@ No environment configuration is required. The BFF runs entirely in-memory with h
 
 ## Running the React Native App
 
+**Android** (emulator or physical device via USB):
 ```bash
 cd mobile
 npm install
-npx expo start
+npx expo run:android
 ```
 
-Then:
-- Press **`i`** to open in iOS Simulator (Mac only, Xcode required)
-- Press **`a`** to open in Android Emulator (Android Studio required)
-- Scan the QR code with **Expo Go** on a physical device
+**iOS** (Mac only, Xcode required):
+```bash
+cd mobile
+npm install
+npx expo run:ios
+```
+
+> **Note:** Expo Go is not supported — use `expo run:android` / `expo run:ios` to build and install a development build directly onto the device or emulator.
 
 ### Connecting to the BFF
 
