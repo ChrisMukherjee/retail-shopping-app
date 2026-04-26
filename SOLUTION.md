@@ -78,7 +78,10 @@ Then restart the Expo dev server.
 ### All tests (from repo root)
 
 ```bash
-npm install
+# First-time setup — installs dependencies for both sub-packages
+npm run install:all
+
+# Run all tests
 npm run test
 ```
 
@@ -165,7 +168,7 @@ This is deliberate — the exercise explicitly prohibits a real database.
 
 **BFF focus:** Unit tests cover the discount engine strategies (eligibility edge cases and saving calculations), cart service (stock reservation mutations), checkout service (success/failure paths), and the expiry scheduler. Integration tests use `supertest` against a fully-wired NestJS app (no mocks — real in-memory repositories) to cover complete HTTP flows.
 
-**Mobile focus:** Unit tests cover store actions and the API service layer (with Axios mocked). Component tests (React Native Testing Library) cover the critical UI states — empty cart, out-of-stock product, successful order summary, and checkout failure.
+**Mobile focus:** Unit tests cover store actions and the API service layer (with Axios mocked). Component tests (React Native Testing Library) cover the critical UI components — discount badge rendering and stock availability badge states.
 
 See [`docs/TDD.md`](docs/TDD.md) for the full test case breakdown.
 

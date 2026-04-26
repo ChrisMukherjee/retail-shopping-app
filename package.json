@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "install:all": "cd bff && npm install && cd ../mobile && npm install",
     "test": "npm run test:bff && npm run test:mobile",
     "test:bff": "cd bff && npm run test:all",
     "test:mobile": "cd mobile && npm run test",
