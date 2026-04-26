@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RootStackParamList } from './types';
@@ -6,17 +6,10 @@ import { ProductListScreen } from '../screens/ProductListScreen';
 import { ProductDetailScreen } from '../screens/ProductDetailScreen';
 import { CartScreen } from '../screens/CartScreen';
 import { CheckoutResultScreen } from '../screens/CheckoutResultScreen';
-import { useCartStore } from '../stores/useCartStore';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function AppNavigator() {
-  const initCart = useCartStore((s) => s.initCart);
-
-  useEffect(() => {
-    initCart();
-  }, []);
-
   return (
     <NavigationContainer>
       <Stack.Navigator

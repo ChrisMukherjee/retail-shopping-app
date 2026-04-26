@@ -1,16 +1,24 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
 import { useCheckoutStore } from '../stores/useCheckoutStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CheckoutResult'>;
 
 export function CheckoutResultScreen({ navigation }: Props) {
-  const { order, error, reset } = useCheckoutStore();
+  const { order: storeOrder, error: storeError, reset } = useCheckoutStore();
+  const [order] = useState(storeOrder);
+  const [error] = useState(storeError);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => reset();
+    }, [reset])
+  );
 
   const handleContinue = () => {
-    reset();
     navigation.navigate('ProductList');
   };
 
@@ -77,7 +85,10 @@ export function CheckoutResultScreen({ navigation }: Props) {
         </View>
       )}
 
-      <TouchableOpacity style={styles.retryBtn} onPress={() => navigation.navigate('Cart')}>
+      <TouchableOpacity
+        style={styles.retryBtn}
+        onPress={() => navigation.reset({ index: 1, routes: [{ name: 'ProductList' }, { name: 'Cart' }] })}
+      >
         <Text style={styles.retryBtnText}>Update Cart</Text>
       </TouchableOpacity>
     </ScrollView>

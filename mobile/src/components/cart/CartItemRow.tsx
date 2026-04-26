@@ -1,15 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { CartItem } from '../../types';
 
 interface Props {
   item: CartItem;
-  onIncrease: () => void;
-  onDecrease: () => void;
+  onQuantityChange: (qty: number) => void;
   onRemove: () => void;
 }
 
-export function CartItemRow({ item, onIncrease, onDecrease, onRemove }: Props) {
+export function CartItemRow({ item, onQuantityChange, onRemove }: Props) {
+  const [qty, setQty] = useState(item.quantity);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!debounceRef.current) setQty(item.quantity);
+  }, [item.quantity]);
+
+  const handleChange = (next: number) => {
+    setQty(next);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      debounceRef.current = null;
+      onQuantityChange(next);
+    }, 500);
+  };
+
   return (
     <View style={styles.row}>
       <View style={styles.info}>
@@ -17,12 +32,16 @@ export function CartItemRow({ item, onIncrease, onDecrease, onRemove }: Props) {
         <Text style={styles.price}>£{item.unitPrice.toFixed(2)} each</Text>
       </View>
       <View style={styles.controls}>
-        <TouchableOpacity style={styles.btn} onPress={onDecrease}><Text style={styles.btnText}>−</Text></TouchableOpacity>
-        <Text style={styles.qty}>{item.quantity}</Text>
-        <TouchableOpacity style={styles.btn} onPress={onIncrease}><Text style={styles.btnText}>+</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.btn} onPress={() => { if (qty > 1) handleChange(qty - 1); }}>
+          <Text style={styles.btnText}>−</Text>
+        </TouchableOpacity>
+        <Text style={styles.qty}>{qty}</Text>
+        <TouchableOpacity style={styles.btn} onPress={() => handleChange(qty + 1)}>
+          <Text style={styles.btnText}>+</Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.right}>
-        <Text style={styles.lineTotal}>£{item.lineTotal.toFixed(2)}</Text>
+        <Text style={styles.lineTotal}>£{(qty * item.unitPrice).toFixed(2)}</Text>
         <TouchableOpacity onPress={onRemove}><Text style={styles.remove}>Remove</Text></TouchableOpacity>
       </View>
     </View>
