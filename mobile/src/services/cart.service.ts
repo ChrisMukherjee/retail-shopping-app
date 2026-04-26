@@ -26,8 +26,4 @@ export const cartService = {
     const res = await apiClient.delete<{ data: Cart }>(`/carts/${cartId}/items/${productId}`);
     return res.data.data;
   },
-
-  async abandonCart(cartId: string): Promise<void> {
-    await apiClient.delete(`/carts/${cartId}`);
-  },
 };

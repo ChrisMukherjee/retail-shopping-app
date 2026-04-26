@@ -6,7 +6,7 @@ interface ProductStore {
   products: Product[];
   selectedProduct: Product | null;
   isLoading: boolean;
-  error: string | null;
+  error: ApiError | null;
   fetchProducts: () => Promise<void>;
   fetchProduct: (id: string) => Promise<void>;
 }
@@ -23,8 +23,7 @@ export const useProductStore = create<ProductStore>((set) => ({
       const products = await productsService.getProducts();
       set({ products, isLoading: false });
     } catch (e) {
-      const err = e as ApiError;
-      set({ error: err.message, isLoading: false });
+      set({ error: e as ApiError, isLoading: false });
     }
   },
 
@@ -34,8 +33,7 @@ export const useProductStore = create<ProductStore>((set) => ({
       const selectedProduct = await productsService.getProduct(id);
       set({ selectedProduct, isLoading: false });
     } catch (e) {
-      const err = e as ApiError;
-      set({ error: err.message, isLoading: false });
+      set({ error: e as ApiError, isLoading: false });
     }
   },
 }));

@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
@@ -7,19 +7,21 @@ import { useProductStore } from '../stores/useProductStore';
 import { useCartStore } from '../stores/useCartStore';
 import { StockBadge } from '../components/shared/StockBadge';
 import { ErrorMessage } from '../components/shared/ErrorMessage';
+import { LoadingSpinner } from '../components/shared/LoadingSpinner';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ProductDetail'>;
 
 export function ProductDetailScreen({ route, navigation }: Props) {
   const { productId } = route.params;
   const { selectedProduct, isLoading, error, fetchProduct } = useProductStore();
-  const { addItem, isLoading: cartLoading, error: cartError } = useCartStore();
+  const { addItem, isLoading: cartLoading, error: cartError, clearError: clearCartError } = useCartStore();
   const [qty, setQty] = useState(1);
 
   useFocusEffect(
     useCallback(() => {
       fetchProduct(productId);
-    }, [productId, fetchProduct])
+      return () => clearCartError();
+    }, [productId, fetchProduct, clearCartError])
   );
 
   const handleAddToCart = async () => {
@@ -33,15 +35,15 @@ export function ProductDetailScreen({ route, navigation }: Props) {
   };
 
   if (isLoading || !selectedProduct) {
-    return <View style={styles.center}><ActivityIndicator size="large" /></View>;
+    return <LoadingSpinner />;
   }
 
   const canAdd = selectedProduct.stockAvailable >= qty;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {error && <ErrorMessage message={error} />}
-      {cartError && <ErrorMessage message={cartError} />}
+      {error && <ErrorMessage message={error.message} />}
+      {cartError && <ErrorMessage message={cartError.message} />}
 
       <Text style={styles.name}>{selectedProduct.name}</Text>
       <Text style={styles.category}>{selectedProduct.category}</Text>
@@ -87,7 +89,6 @@ export function ProductDetailScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   content: { padding: 20 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   name: { fontSize: 22, fontWeight: '700', color: '#111827', marginBottom: 4 },
   category: { fontSize: 13, color: '#6B7280', marginBottom: 8 },
   price: { fontSize: 26, fontWeight: '800', color: '#1D4ED8', marginBottom: 10 },

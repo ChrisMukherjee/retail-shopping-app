@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import React, { useEffect, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
 import { useCartStore } from '../stores/useCartStore';
 import { useCheckoutStore } from '../stores/useCheckoutStore';
@@ -8,17 +9,24 @@ import { CartItemRow } from '../components/cart/CartItemRow';
 import { DiscountBadge } from '../components/cart/DiscountBadge';
 import { ErrorMessage } from '../components/shared/ErrorMessage';
 import { EmptyState } from '../components/shared/EmptyState';
+import { LoadingSpinner } from '../components/shared/LoadingSpinner';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Cart'>;
 
 export function CartScreen({ navigation }: Props) {
-  const { cart, isLoading, error, fetchCart, updateItem, removeItem, cartId } = useCartStore();
+  const { cart, isLoading, error, fetchCart, updateItem, removeItem, cartId, clearError } = useCartStore();
   const { checkout, isLoading: checkoutLoading } = useCheckoutStore();
   const cartError = useCheckoutStore((s) => s.error);
 
   useEffect(() => {
     fetchCart();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => clearError();
+    }, [clearError])
+  );
 
   const handleCheckout = async () => {
     if (!cartId) return;
@@ -30,14 +38,14 @@ export function CartScreen({ navigation }: Props) {
   };
 
   if (isLoading && !cart) {
-    return <View style={styles.center}><ActivityIndicator size="large" /></View>;
+    return <LoadingSpinner />;
   }
 
   const isEmpty = !cart || cart.items.length === 0;
 
   return (
     <View style={styles.container}>
-      {error && <ErrorMessage message={error} />}
+      {error && <ErrorMessage message={error.message} />}
       {cartError && <ErrorMessage message={`Checkout failed: ${cartError.message}`} />}
 
       {isEmpty ? (
@@ -48,10 +56,7 @@ export function CartScreen({ navigation }: Props) {
             <CartItemRow
               key={item.productId}
               item={item}
-              onIncrease={() => updateItem(item.productId, item.quantity + 1)}
-              onDecrease={() => {
-                if (item.quantity > 1) updateItem(item.productId, item.quantity - 1);
-              }}
+              onQuantityChange={(qty) => updateItem(item.productId, qty)}
               onRemove={() => removeItem(item.productId)}
             />
           ))}
@@ -92,7 +97,6 @@ export function CartScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   content: { padding: 16 },
   summary: { marginTop: 16, backgroundColor: '#fff', borderRadius: 10, padding: 16 },
   summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
