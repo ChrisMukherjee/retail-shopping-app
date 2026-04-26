@@ -90,7 +90,7 @@ src/
 
 All responses are wrapped:
 ```json
-{ "data": { ... }, "meta": { ... } }   // success
+{ "data": { ... } }                                                  // success
 { "error": { "code": "...", "message": "...", "details": [...] } }  // failure
 ```
 

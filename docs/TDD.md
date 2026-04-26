@@ -41,7 +41,7 @@ npm run test:e2e       # integration (supertest) tests
 ### NestJS Module Breakdown
 
 ```
-AppModule
+AppModule  (ScheduleModule.forRoot() registered here)
 ├── CatalogueModule
 │   ├── CatalogueController
 │   ├── CatalogueService
@@ -52,11 +52,11 @@ AppModule
 │   ├── CartController
 │   ├── CartService
 │   ├── ReservationService
+│   ├── CartExpiryScheduler        (@Cron — lives inside CartModule)
 │   └── InMemoryCartRepository     (implements ICartRepository)
-├── CheckoutModule
-│   ├── CheckoutController
-│   └── CheckoutService
-└── SchedulerModule                 (cart expiry cron)
+└── CheckoutModule
+    ├── CheckoutController
+    └── CheckoutService
 ```
 
 **Dependency injection tokens:** Repositories are injected via string tokens (`PRODUCT_REPOSITORY`, `CART_REPOSITORY`) so the concrete class can be swapped without changing service constructors. This satisfies the Dependency Inversion principle and keeps tests clean.
@@ -242,24 +242,19 @@ End-to-end HTTP tests using `supertest` against a fully-wired NestJS app (no moc
 
 ### Mobile App Tests
 
-#### Unit Tests
+#### Unit Tests — Stores (`useCartStore`, `useCheckoutStore`)
 
-| Unit | What to test |
-|------|-------------|
-| `cart.service.ts` | Correct API calls made with right payloads; error responses mapped to typed errors |
-| `useCartStore` | `addItem` action updates store; `removeItem` removes correctly; `error` set on API failure |
-| `useCheckoutStore` | `checkout` sets `order` on success; `error` set with readable message on failure |
-| `DiscountBadge` component | Renders saving amount when discount applied; renders nothing when no discount |
-| `CartSummary` component | Displays subtotal, discount saving, and total correctly |
+| Unit | Scenarios covered |
+|------|------------------|
+| `useCartStore` | `addItem` creates cart on first call then adds item; `addItem` sets `error` when API rejects; `removeItem` calls service and clears item from state; `clearCart` resets `cartId` and `cart` to null |
+| `useCheckoutStore` | `checkout` sets `order` and returns `true` on success; `checkout` sets typed `error` and returns `false` on API failure; `reset` clears both `order` and `error` |
 
 #### Component Tests (React Native Testing Library)
 
-| Scenario | Assertions |
-|----------|-----------|
-| `ProductDetailScreen` — out-of-stock product | "Add to Cart" button is disabled |
-| `CartScreen` — empty cart | Empty state message rendered; Checkout button disabled |
-| `CheckoutResultScreen` — success | Order ID and total visible |
-| `CheckoutResultScreen` — failure | Error message and per-item unavailability details visible |
+| Component | Scenarios covered |
+|-----------|------------------|
+| `DiscountBadge` | Renders the discount description text; renders the saving formatted as `-£X.XX` |
+| `StockBadge` | Shows "Out of stock" when `stock === 0`; shows "Only N left" for low stock; shows "In stock" for sufficient stock |
 
 ### Running All Tests
 

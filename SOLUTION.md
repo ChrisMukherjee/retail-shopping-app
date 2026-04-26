@@ -148,7 +148,7 @@ This is deliberate — the exercise explicitly prohibits a real database.
 
 1. Adding an item to a cart immediately increments `stockReserved` on that product. The available quantity visible to other carts decreases accordingly.
 2. A NestJS `@Cron` job runs every 30 seconds. Any cart whose `lastActivityAt` is older than 2 minutes has its reservations released and its status set to `expired`.
-3. On checkout (success **or** failure), all reservations for the cart are released. On success, `stockTotal` is additionally decremented.
+3. On checkout, **reservations are released first**, before stock is re-validated. This is intentional: if validation happened before releasing, the cart's own `stockReserved` would inflate the reserved count and make `stockAvailable` appear lower than it really is — causing a false-positive 409 on the customer's own items. Releasing first gives an accurate picture of what stock is genuinely available to others. On success, `stockTotal` is then decremented. On failure, reservations are not re-applied — the customer must re-add items to a new cart.
 
 ---
 
