@@ -182,7 +182,7 @@ See [`docs/TDD.md`](docs/TDD.md) for the full test case breakdown.
 - **Single active cart per session:** The mobile app manages one `cartId` at a time via AsyncStorage.
 - **Best-value discount wins:** Only the highest-saving eligible discount is applied. Discounts do not stack.
 - **BuyNGetOneFree** applies per product line (not mixed across different products).
-- **Cart expiry is approximate:** The scheduler runs every 30 seconds, so a cart may be active for up to 2.5 minutes before expiry fires. This is acceptable for the exercise.
+- **Cart expiry uses `setTimeout` per cart:** Each cart schedules an exact 2-minute inactivity timer. Any mutation cancels and resets it. A cron-based approach was considered but `setTimeout` is a better fit for an in-memory system — its main drawback (lost on process restart) is irrelevant since a restart resets all state anyway.
 - **Stock reservation and checkout are not atomic:** In-memory single-process — race conditions between concurrent requests are not a concern for this exercise.
 - **No pagination:** The product catalogue is small enough to return in a single response.
 - **Estimated delivery** in the order summary is a simulated value: 3 business days from the confirmed date.

@@ -22,7 +22,7 @@ A flat monorepo (no Nx/Turborepo) keeps the submission simple while still co-loc
 | Choice | Rationale |
 |--------|-----------|
 | NestJS | Required. Provides DI container, module system, and decorator-based routing — maps naturally to Clean Architecture layers |
-| `@nestjs/schedule` | Cron job for the 2-minute cart expiry check |
+| `setTimeout` (Node.js built-in) | Per-cart inactivity timer for exact 2-minute expiry; managed inside `CartService` |
 | `class-validator` + `class-transformer` | DTO validation with automatic pipe |
 | `uuid` | Deterministic ID generation for carts/orders |
 | Jest + `@nestjs/testing` | NestJS-native testing utilities |
@@ -50,9 +50,8 @@ AppModule  (ScheduleModule.forRoot() registered here)
 │   └── InMemoryDiscountRepository (implements IDiscountRepository)
 ├── CartModule
 │   ├── CartController
-│   ├── CartService
+│   ├── CartService                (owns expiry timers via setTimeout)
 │   ├── ReservationService
-│   ├── CartExpiryScheduler        (@Cron — lives inside CartModule)
 │   └── InMemoryCartRepository     (implements ICartRepository)
 └── CheckoutModule  (imports CartModule — one-way, no circular dependency)
     ├── CheckoutController         (POST /carts/:id/checkout)
@@ -96,25 +95,23 @@ Domain exceptions:
 - `CartExpiredException` → 410
 - `CartAlreadyCheckedOutException` → 422
 
-### Cart Expiry Scheduler
+### Cart Expiry
+
+Cart expiry is managed by `CartService` using a `setTimeout` per cart rather than a periodic cron job. When a cart is created or mutated, a 2-minute timer is scheduled. Any further mutation cancels the existing timer and schedules a fresh one. When the timer fires, the cart is expired and reservations are released.
 
 ```typescript
-@Injectable()
-export class CartExpiryScheduler {
-  @Cron(CronExpression.EVERY_30_SECONDS)
-  async expireInactiveCarts(): Promise<void> {
-    const cutoff = new Date(Date.now() - 2 * 60 * 1000);
-    const staleCarts = await this.cartRepo.findActiveBefore(cutoff);
-    for (const cart of staleCarts) {
-      await this.reservationService.releaseAll(cart);
-      cart.status = 'expired';
-      await this.cartRepo.save(cart);
-    }
-  }
+// Scheduled on create/mutate; cancelled and rescheduled on any cart touch
+private scheduleExpiry(cartId: string): void {
+  const existing = this.expiryTimers.get(cartId);
+  if (existing) clearTimeout(existing);
+  this.expiryTimers.set(
+    cartId,
+    setTimeout(async () => { await this.expireCart(cartId); }, this.EXPIRY_MS),
+  );
 }
 ```
 
-The scheduler runs every 30s (half the 2-minute window) to ensure timely expiry without excessive overhead.
+This approach gives an exact 2-minute inactivity window with no polling overhead. A cron-based approach was considered but rejected: its main advantage (restart safety) is irrelevant here because a BFF restart resets all in-memory state anyway.
 
 ---
 
@@ -227,7 +224,7 @@ This means the customer's cart survives app restarts within the 2-minute inactiv
 | `CartService` | Add item reduces available stock; update item adjusts reservation delta; remove item restores stock; cannot add more than available stock |
 | `CheckoutService` | Success path decrements `stockTotal`; failure path returns correct `INSUFFICIENT_STOCK` details; reservations always released post-checkout |
 | `ReservationService` | `releaseAll` correctly reduces `stockReserved` for all cart items |
-| `CartExpiryScheduler` | Scheduler calls `releaseAll` for carts older than 2 minutes; does not expire recently-active carts |
+| `CartService` (expiry) | Timer fires after 2 minutes and expires the cart; mutation resets the timer; already checked-out carts are not re-expired |
 
 #### Integration Tests (`*.e2e-spec.ts`)
 

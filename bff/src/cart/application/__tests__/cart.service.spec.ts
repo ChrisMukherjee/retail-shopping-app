@@ -14,7 +14,6 @@ function makeDeps(product: Product, cart: Cart | null = null) {
   const cartRepo = {
     findById: jest.fn().mockResolvedValue(cart),
     save: jest.fn().mockResolvedValue(undefined),
-    findActiveBefore: jest.fn(),
     delete: jest.fn(),
   };
   const productRepo = {
@@ -120,6 +119,63 @@ describe('CartService', () => {
       const svc = buildService(deps);
       await svc.updateItem('cart_1', 'prod_001', 0);
       expect(cart.items).toHaveLength(0);
+    });
+  });
+
+  describe('expiry', () => {
+    beforeEach(() => jest.useFakeTimers());
+    afterEach(() => jest.useRealTimers());
+
+    it('expires the cart and releases reservations after 2 minutes of inactivity', async () => {
+      const product = makeProduct();
+      const cart = makeCart();
+      const deps = makeDeps(product, cart);
+      deps.cartRepo.findById.mockResolvedValue(cart);
+      const svc = buildService(deps);
+
+      await svc.addItem('cart_1', 'prod_001', 1);
+      await jest.advanceTimersByTimeAsync(2 * 60 * 1000);
+
+      expect(deps.reservationService.releaseAll).toHaveBeenCalledWith(cart);
+      expect(cart.status).toBe('expired');
+    });
+
+    it('resets the expiry timer on each cart mutation', async () => {
+      const product = makeProduct();
+      const cart = makeCart();
+      const deps = makeDeps(product, cart);
+      deps.cartRepo.findById.mockResolvedValue(cart);
+      const svc = buildService(deps);
+
+      await svc.addItem('cart_1', 'prod_001', 1);
+
+      // 90s in — touch the cart, which resets the 2-minute timer
+      await jest.advanceTimersByTimeAsync(90_000);
+      await svc.addItem('cart_1', 'prod_001', 1);
+
+      // 90s more (only 90s since last touch) — should not have expired
+      await jest.advanceTimersByTimeAsync(90_000);
+      expect(cart.status).toBe('active');
+
+      // 30s more (exactly 2 minutes since last touch) — should expire now
+      await jest.advanceTimersByTimeAsync(30_000);
+      expect(cart.status).toBe('expired');
+    });
+
+    it('does not expire a cart that has already been checked out', async () => {
+      const product = makeProduct();
+      const cart = makeCart();
+      const deps = makeDeps(product, cart);
+      deps.cartRepo.findById.mockResolvedValue(cart);
+      const svc = buildService(deps);
+
+      await svc.addItem('cart_1', 'prod_001', 1);
+      cart.status = 'checked_out';
+
+      await jest.advanceTimersByTimeAsync(2 * 60 * 1000);
+
+      expect(deps.reservationService.releaseAll).not.toHaveBeenCalled();
+      expect(cart.status).toBe('checked_out');
     });
   });
 });

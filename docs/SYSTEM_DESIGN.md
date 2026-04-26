@@ -309,9 +309,9 @@ stockReserved += qty   ←──── stockAvailable decreases for all other ca
        │
   ┌────┴──────────────────────────────────────────────────┐
   │ Cart active                                           │
-  │  • Every mutation resets lastActivityAt               │
-  │  • Scheduler checks every 30s for carts where         │
-  │    now - lastActivityAt > 2 minutes                   │
+  │  • Every mutation cancels and reschedules a           │
+  │    2-minute setTimeout in CartService                 │
+  │  • Timer fires exactly 2 minutes after last activity  │
   └────┬──────────────────────────────────────────────────┘
        │
    ┌───┴─────────────────────────────┐

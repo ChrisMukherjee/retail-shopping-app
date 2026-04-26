@@ -16,7 +16,6 @@ function makeDeps(cart: Cart, products: Product[]) {
   const cartRepo = {
     findById: jest.fn().mockResolvedValue(cart),
     save: jest.fn().mockResolvedValue(undefined),
-    findActiveBefore: jest.fn(),
     delete: jest.fn(),
   };
   const productRepo = {

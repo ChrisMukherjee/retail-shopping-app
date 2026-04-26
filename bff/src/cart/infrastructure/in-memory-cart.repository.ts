@@ -10,12 +10,6 @@ export class InMemoryCartRepository implements ICartRepository {
     return this.store.get(id) ?? null;
   }
 
-  async findActiveBefore(cutoff: Date): Promise<Cart[]> {
-    return Array.from(this.store.values()).filter(
-      (c) => c.status === 'active' && c.lastActivityAt < cutoff,
-    );
-  }
-
   async save(cart: Cart): Promise<void> {
     this.store.set(cart.id, cart);
   }

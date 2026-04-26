@@ -25,9 +25,13 @@ export class CartService {
     private readonly discountEngine: DiscountEngineService,
   ) {}
 
+  private readonly EXPIRY_MS = 2 * 60 * 1000;
+  private readonly expiryTimers = new Map<string, NodeJS.Timeout>();
+
   async createCart(): Promise<{ cartId: string }> {
     const cart = new Cart(uuidv4());
     await this.cartRepo.save(cart);
+    this.scheduleExpiry(cart.id);
     return { cartId: cart.id };
   }
 
@@ -58,6 +62,7 @@ export class CartService {
     await this.reservationService.reserve(productId, quantity);
     cart.touch();
     await this.cartRepo.save(cart);
+    this.scheduleExpiry(cartId);
     return this.buildCartView(cart);
   }
 
@@ -86,6 +91,7 @@ export class CartService {
 
     cart.touch();
     await this.cartRepo.save(cart);
+    this.scheduleExpiry(cartId);
     return this.buildCartView(cart);
   }
 
@@ -98,12 +104,40 @@ export class CartService {
     await this.reservationService.release(productId, item.quantity);
     cart.touch();
     await this.cartRepo.save(cart);
+    this.scheduleExpiry(cartId);
     return this.buildCartView(cart);
   }
 
   async abandonCart(cartId: string): Promise<void> {
+    this.cancelExpiry(cartId);
     const cart = await this.cartRepo.findById(cartId);
     if (!cart) return;
+    await this.reservationService.releaseAll(cart);
+    cart.status = 'expired';
+    await this.cartRepo.save(cart);
+  }
+
+  private scheduleExpiry(cartId: string): void {
+    const existing = this.expiryTimers.get(cartId);
+    if (existing) clearTimeout(existing);
+    this.expiryTimers.set(
+      cartId,
+      setTimeout(async () => { await this.expireCart(cartId); }, this.EXPIRY_MS),
+    );
+  }
+
+  private cancelExpiry(cartId: string): void {
+    const existing = this.expiryTimers.get(cartId);
+    if (existing) {
+      clearTimeout(existing);
+      this.expiryTimers.delete(cartId);
+    }
+  }
+
+  private async expireCart(cartId: string): Promise<void> {
+    this.expiryTimers.delete(cartId);
+    const cart = await this.cartRepo.findById(cartId);
+    if (!cart || cart.status !== 'active') return;
     await this.reservationService.releaseAll(cart);
     cart.status = 'expired';
     await this.cartRepo.save(cart);

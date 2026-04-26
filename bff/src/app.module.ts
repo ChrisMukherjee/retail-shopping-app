@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ScheduleModule } from '@nestjs/schedule';
 import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
@@ -9,7 +8,6 @@ import { CheckoutModule } from './checkout/checkout.module';
 
 @Module({
   imports: [
-    ScheduleModule.forRoot(),
     CatalogueModule,
     CartModule,
     CheckoutModule,
