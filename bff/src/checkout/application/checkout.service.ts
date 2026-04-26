@@ -34,12 +34,15 @@ export class CheckoutService {
       cart.items.map((item) => this.productRepo.findById(item.productId)),
     );
 
-    // Release reservations first (always, per spec) then validate against physical stock
+    // Reservations must be released before validating stock. If we validated first,
+    // the cart's own stockReserved would make stockAvailable appear lower than it is,
+    // producing a false-positive INSUFFICIENT_STOCK on the customer's own items.
+    // Reservations are not re-applied on failure — the customer must start a new cart.
     await this.reservationService.releaseAll(cart);
     cart.status = 'checked_out';
     await this.cartRepo.save(cart);
 
-    // Re-fetch products after reservation release to get accurate stockAvailable
+    // Re-fetch after release so stockAvailable reflects the updated stockReserved values.
     const freshProducts = await Promise.all(
       cart.items.map((item) => this.productRepo.findById(item.productId)),
     );
