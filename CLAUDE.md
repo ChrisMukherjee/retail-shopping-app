@@ -149,21 +149,19 @@ POST   /carts/:id/checkout    → checkout → 200 order summary or 409 INSUFFIC
 - API service layer (Axios mocked)
 
 **Mobile component tests:**
-- Empty cart state
-- Out-of-stock product (Add to Cart disabled)
-- Successful order summary
-- Checkout failure with item-level detail
+- `DiscountBadge` — renders description and saving amount
+- `StockBadge` — out of stock / low stock / in stock states
 
 ---
 
 ## What SOLUTION.md Must Cover (Checklist)
 
-- [ ] How to run the BFF (`cd bff && npm install && npm run start:dev`)
-- [ ] How to run the mobile app (`cd mobile && npm install && npx expo start`)
-- [ ] How to run all tests (`npm run test` from root)
-- [ ] Physical device URL override (EXPO_PUBLIC_API_URL)
-- [ ] Discount engine explanation (all 5 types, evaluation flow)
-- [ ] Data persistence approach (in-memory, reset on restart)
-- [ ] Assumptions list
-- [ ] Navigation & state management rationale
-- [ ] Repository structure explanation
+- [x] How to run the BFF (`cd bff && npm install && npm run start:dev`)
+- [x] How to run the mobile app (`cd mobile && npm install && npx expo start`)
+- [x] How to run all tests (`npm run install:all && npm run test` from root)
+- [x] Physical device URL override (EXPO_PUBLIC_API_URL)
+- [x] Discount engine explanation (all 5 types, evaluation flow)
+- [x] Data persistence approach (in-memory, reset on restart)
+- [x] Assumptions list
+- [x] Navigation & state management rationale
+- [x] Repository structure explanation
