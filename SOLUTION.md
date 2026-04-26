@@ -67,14 +67,15 @@ npx expo run:ios
 
 ### Connecting to the BFF
 
-By default the app points to `http://localhost:3000`. This works for simulators running on the same machine as the BFF.
+The app reads `EXPO_PUBLIC_API_URL` from `mobile/.env`. A `.env` file is required in all cases — the correct value depends on how you are running the app:
 
-**Physical device:** Create `mobile/.env` with your machine's LAN IP:
-```
-EXPO_PUBLIC_API_URL=http://192.168.x.x:3000
-```
+| Environment | `EXPO_PUBLIC_API_URL` |
+|---|---|
+| Android emulator | `http://10.0.2.2:3000` |
+| iOS simulator | `http://localhost:3000` |
+| Physical device (any) | `http://<your-LAN-IP>:3000` |
 
-Then restart the Expo dev server.
+The repository ships with `mobile/.env` set to the Android emulator value (`10.0.2.2`). Update it if you are running on iOS or a physical device, then rebuild the app.
 
 ---
 
