@@ -70,7 +70,7 @@ Five promotional discount types will be seeded at BFF startup:
 | **Category percentage** | 20% off all Electronics | Applies only to matching category items |
 | **Fixed amount off cart** | £5 off when cart ≥ £30 | Flat deduction from subtotal |
 
-Only one discount is applied per cart (best-value wins), unless discounts are stackable (to be decided by the discount engine — see SYSTEM_DESIGN.md).
+Only one discount is applied per cart (best-value wins). Discounts do not stack.
 
 ---
 

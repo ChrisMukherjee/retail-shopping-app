@@ -27,10 +27,9 @@ The BFF is organised in concentric layers. Inner layers have no knowledge of out
 
 ```
 src/
-├── shared/                      # Shared kernel (cross-cutting types, guards, filters)
-│   ├── filters/                 # Global exception filters
-│   ├── interceptors/            # Response shaping
-│   └── types/                   # Shared value types (Money, ID)
+├── shared/                      # Shared kernel (cross-cutting concerns)
+│   ├── filters/                 # GlobalExceptionFilter
+│   └── exceptions/              # DomainException base + typed domain exceptions
 │
 ├── catalogue/                   # Bounded context: Products & Discounts
 │   ├── domain/
@@ -39,7 +38,10 @@ src/
 │   │   └── repositories/        # Interfaces (IProductRepository, IDiscountRepository)
 │   ├── application/
 │   │   ├── catalogue.service.ts
-│   │   └── discount-engine.service.ts
+│   │   └── discount-engine/
+│   │       ├── discount-engine.service.ts
+│   │       ├── discount-strategy.interface.ts
+│   │       └── strategies/      # One class per DiscountType
 │   ├── infrastructure/
 │   │   ├── in-memory-product.repository.ts
 │   │   ├── in-memory-discount.repository.ts
@@ -52,12 +54,12 @@ src/
 │
 ├── cart/                        # Bounded context: Cart lifecycle
 │   ├── domain/
-│   │   ├── cart.entity.ts
-│   │   ├── cart-item.entity.ts
+│   │   ├── cart.entity.ts       # Cart + CartItem defined here
 │   │   └── repositories/        # ICartRepository
 │   ├── application/
 │   │   ├── cart.service.ts
-│   │   └── reservation.service.ts
+│   │   ├── reservation.service.ts
+│   │   └── cart-expiry.scheduler.ts
 │   ├── infrastructure/
 │   │   └── in-memory-cart.repository.ts
 │   └── presentation/
@@ -70,8 +72,7 @@ src/
     ├── application/
     │   └── checkout.service.ts
     └── presentation/
-        ├── checkout.controller.ts
-        └── dto/
+        └── checkout.controller.ts  # POST /carts/:id/checkout
 ```
 
 ### SOLID Application
