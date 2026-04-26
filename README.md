@@ -1,6 +1,6 @@
 # Retail Shopping App
 
-A full-stack retail shopping application built as a take-home exercise for Legal & General.
+A full-stack retail shopping application built as a take-home exercise.
 
 - **BFF:** NestJS + TypeScript — REST API with in-memory storage, discount engine, cart lifecycle, and stock reservation (port 3000)
 - **Mobile:** React Native + TypeScript (Expo managed workflow) — product catalogue, cart management, and checkout flow

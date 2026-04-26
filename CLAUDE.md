@@ -2,7 +2,7 @@
 
 ## What This Project Is
 
-A take-home exercise for Legal & General. Full-stack retail shopping app:
+A take-home exercise. Full-stack retail shopping app:
 - **BFF:** NestJS + TypeScript (port 3000, in-memory storage)
 - **Mobile:** React Native + TypeScript (Expo managed workflow)
 
