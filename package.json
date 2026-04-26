@@ -1,0 +1,12 @@
+{
+  "name": "retail-shopping-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "npm run test:bff && npm run test:mobile",
+    "test:bff": "cd bff && npm run test:all",
+    "test:mobile": "cd mobile && npm run test",
+    "start:bff": "cd bff && npm run start:dev",
+    "start:mobile": "cd mobile && npx expo start"
+  }
+}

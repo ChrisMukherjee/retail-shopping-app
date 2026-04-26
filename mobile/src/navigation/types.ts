@@ -1,0 +1,6 @@
+export type RootStackParamList = {
+  ProductList: undefined;
+  ProductDetail: { productId: string };
+  Cart: undefined;
+  CheckoutResult: undefined;
+};
