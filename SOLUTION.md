@@ -170,6 +170,8 @@ This is deliberate — the exercise explicitly prohibits a real database.
 
 **Mobile focus:** Unit tests cover store actions and the API service layer (with Axios mocked). Component tests (React Native Testing Library) cover the critical UI components — discount badge rendering and stock availability badge states.
 
+**Why fully-wired integration tests rather than mocked repositories?** Because the storage layer is in-memory, spinning up the complete NestJS app in tests costs essentially nothing — there are no connections to open, no seeding scripts, and no teardown. This makes fully-wired tests the better choice here: they catch things unit tests alone cannot (DI misconfiguration, filter/pipe ordering, incorrect HTTP status codes) without any of the infrastructure overhead that would make this approach impractical against a real database. In a production app the approach would change: repository interfaces would be swapped for in-memory test doubles via NestJS's `overrideProvider()` for integration tests, with a smaller suite of true end-to-end smoke tests running against a dedicated test database.
+
 See [`docs/TDD.md`](docs/TDD.md) for the full test case breakdown.
 
 ---
