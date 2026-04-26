@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback } from 'react';
 import { FlatList, View, ActivityIndicator, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
 import { useProductStore } from '../stores/useProductStore';
 import { useCartStore } from '../stores/useCartStore';
@@ -15,9 +16,11 @@ export function ProductListScreen({ navigation }: Props) {
   const cart = useCartStore((s) => s.cart);
   const cartCount = cart?.items.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchProducts();
+    }, [fetchProducts])
+  );
 
   useEffect(() => {
     navigation.setOptions({

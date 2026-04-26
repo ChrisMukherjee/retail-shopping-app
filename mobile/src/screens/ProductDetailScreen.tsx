@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet, Alert } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
 import { useProductStore } from '../stores/useProductStore';
 import { useCartStore } from '../stores/useCartStore';
@@ -15,9 +16,11 @@ export function ProductDetailScreen({ route, navigation }: Props) {
   const { addItem, isLoading: cartLoading, error: cartError } = useCartStore();
   const [qty, setQty] = useState(1);
 
-  useEffect(() => {
-    fetchProduct(productId);
-  }, [productId]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchProduct(productId);
+    }, [productId, fetchProduct])
+  );
 
   const handleAddToCart = async () => {
     if (!selectedProduct) return;

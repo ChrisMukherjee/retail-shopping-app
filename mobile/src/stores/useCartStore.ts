@@ -15,7 +15,7 @@ interface CartStore {
   addItem: (productId: string, quantity: number) => Promise<void>;
   updateItem: (productId: string, quantity: number) => Promise<void>;
   removeItem: (productId: string) => Promise<void>;
-  clearCart: () => void;
+  clearCart: () => Promise<void>;
 }
 
 export const useCartStore = create<CartStore>((set, get) => ({
@@ -101,8 +101,8 @@ export const useCartStore = create<CartStore>((set, get) => ({
     }
   },
 
-  clearCart: () => {
-    AsyncStorage.removeItem(CART_ID_KEY);
+  clearCart: async () => {
+    await AsyncStorage.removeItem(CART_ID_KEY);
     set({ cartId: null, cart: null, error: null });
   },
 }));

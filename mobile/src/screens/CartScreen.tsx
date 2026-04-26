@@ -24,7 +24,7 @@ export function CartScreen({ navigation }: Props) {
     if (!cartId) return;
     const success = await checkout(cartId);
     if (success) {
-      useCartStore.getState().clearCart();
+      await useCartStore.getState().clearCart();
     }
     navigation.navigate('CheckoutResult');
   };
@@ -41,7 +41,7 @@ export function CartScreen({ navigation }: Props) {
       {cartError && <ErrorMessage message={`Checkout failed: ${cartError.message}`} />}
 
       {isEmpty ? (
-        <EmptyState message="Your cart is empty.\nBrowse products to get started." />
+        <EmptyState message={`Your cart is empty.\nBrowse products to get started.`} />
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           {cart.items.map((item) => (
