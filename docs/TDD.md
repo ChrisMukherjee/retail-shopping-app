@@ -54,8 +54,8 @@ AppModule  (ScheduleModule.forRoot() registered here)
 │   ├── ReservationService
 │   ├── CartExpiryScheduler        (@Cron — lives inside CartModule)
 │   └── InMemoryCartRepository     (implements ICartRepository)
-└── CheckoutModule
-    ├── CheckoutController
+└── CheckoutModule  (imports CartModule — one-way, no circular dependency)
+    ├── CheckoutController         (POST /carts/:id/checkout)
     └── CheckoutService
 ```
 

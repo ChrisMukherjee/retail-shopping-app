@@ -5,12 +5,14 @@ import { ValidationPipe } from '@nestjs/common';
 import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
 import { CatalogueModule } from './catalogue/catalogue.module';
 import { CartModule } from './cart/cart.module';
+import { CheckoutModule } from './checkout/checkout.module';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     CatalogueModule,
     CartModule,
+    CheckoutModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: GlobalExceptionFilter },

@@ -2,14 +2,10 @@ import { Controller, Post, Get, Patch, Delete, Param, Body, HttpCode } from '@ne
 import { CartService } from '../application/cart.service';
 import { AddItemDto } from './dto/add-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
-import { CheckoutService } from '../../checkout/application/checkout.service';
 
 @Controller('carts')
 export class CartController {
-  constructor(
-    private readonly cartService: CartService,
-    private readonly checkoutService: CheckoutService,
-  ) {}
+  constructor(private readonly cartService: CartService) {}
 
   @Post()
   async createCart() {
@@ -51,9 +47,4 @@ export class CartController {
     await this.cartService.abandonCart(id);
   }
 
-  @Post(':id/checkout')
-  async checkout(@Param('id') id: string) {
-    const data = await this.checkoutService.checkout(id);
-    return { data };
-  }
 }
