@@ -63,5 +63,5 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
   list: { paddingVertical: 8 },
   cartBtn: { marginRight: 8, padding: 4 },
-  cartBtnText: { fontSize: 18 },
+  cartBtnText: { fontSize: 18, color: '#fff' },
 });

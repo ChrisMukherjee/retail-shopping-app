@@ -176,6 +176,12 @@ See [`docs/TDD.md`](docs/TDD.md) for the full test case breakdown.
 
 ---
 
+## Platform Testing Notes
+
+Manual testing was carried out on Android only (via Android Studio emulator and a physical Android device). This was due to the development machine being a Windows PC — Xcode is macOS-exclusive, so the iOS simulator was not available. The app is built with Expo managed workflow and uses no platform-specific native modules, so iOS behaviour is expected to be equivalent, but this could not be verified manually.
+
+---
+
 ## Assumptions
 
 - **Currency:** All prices are in GBP (£), stored as JavaScript `number` (float). Display is rounded to 2 decimal places. No real payment processing.

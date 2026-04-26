@@ -32,7 +32,7 @@ export function CartItemRow({ item, onQuantityChange, onRemove }: Props) {
         <Text style={styles.price}>£{item.unitPrice.toFixed(2)} each</Text>
       </View>
       <View style={styles.controls}>
-        <TouchableOpacity style={styles.btn} onPress={() => { if (qty > 1) handleChange(qty - 1); }}>
+        <TouchableOpacity style={styles.btn} onPress={() => qty > 1 ? handleChange(qty - 1) : onRemove()}>
           <Text style={styles.btnText}>−</Text>
         </TouchableOpacity>
         <Text style={styles.qty}>{qty}</Text>
