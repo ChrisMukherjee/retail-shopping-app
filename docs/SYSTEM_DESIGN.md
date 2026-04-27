@@ -57,9 +57,8 @@ src/
 │   │   ├── cart.entity.ts       # Cart + CartItem defined here
 │   │   └── repositories/        # ICartRepository
 │   ├── application/
-│   │   ├── cart.service.ts
-│   │   ├── reservation.service.ts
-│   │   └── cart-expiry.scheduler.ts
+│   │   ├── cart.service.ts      # owns expiry timers via setTimeout
+│   │   └── reservation.service.ts
 │   ├── infrastructure/
 │   │   └── in-memory-cart.repository.ts
 │   └── presentation/
@@ -322,7 +321,7 @@ cart.status = expired cart.status = checked_out
                        stockReserved -= qty (always)
 ```
 
-**Implementation:** NestJS `@Cron` (from `@nestjs/schedule`) runs every 30 seconds to expire stale carts.
+**Implementation:** A per-cart `setTimeout` (Node.js built-in) is managed inside `CartService`. On cart creation or any mutation, a 2-minute timer is scheduled. Any further mutation cancels and resets it. When the timer fires, the cart is expired and reservations are released. No external scheduler package is required.
 
 ---
 
@@ -385,7 +384,6 @@ A thin service layer wraps `axios` — screens and stores never call `fetch`/`ax
 services/
   api.client.ts          # axios instance, base URL from config, interceptors
   products.service.ts    # getProducts(), getProduct(id)
-  discounts.service.ts   # getDiscounts()
   cart.service.ts        # createCart(), getCart(), addItem(), updateItem(), removeItem()
   checkout.service.ts    # checkout(cartId)
 ```

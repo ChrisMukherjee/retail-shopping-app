@@ -41,7 +41,7 @@ npm run test:e2e       # integration (supertest) tests
 ### NestJS Module Breakdown
 
 ```
-AppModule  (ScheduleModule.forRoot() registered here)
+AppModule
 ├── CatalogueModule
 │   ├── CatalogueController
 │   ├── CatalogueService
@@ -234,7 +234,6 @@ End-to-end HTTP tests using `supertest` against a fully-wired NestJS app (no moc
 |----------|-----------|
 | Full happy path | Create cart → add items → GET cart shows correct totals with discount → checkout → 200 with order summary → product stock reduced |
 | Insufficient stock at checkout | Fill cart beyond available stock → checkout → 409 with correct `details` array |
-| Cart expiry | Create cart, add items, fast-forward time mock, trigger scheduler → stock restored |
 | Duplicate checkout | Checkout cart → attempt second checkout → 422 |
 
 ### Mobile App Tests
@@ -252,6 +251,7 @@ End-to-end HTTP tests using `supertest` against a fully-wired NestJS app (no moc
 |-----------|------------------|
 | `DiscountBadge` | Renders the discount description text; renders the saving formatted as `-£X.XX` |
 | `StockBadge` | Shows "Out of stock" when `stock === 0`; shows "Only N left" for low stock; shows "In stock" for sufficient stock |
+| `CartItemRow` | Increment/decrement updates displayed qty immediately; debounces `onQuantityChange` — rapid presses collapse to one callback with the final value; decrement at qty=1 calls `onRemove`; Remove button double-press guard fires `onRemove` only once; external prop update syncs qty only when no debounce is in flight |
 
 ### Running All Tests
 
@@ -273,7 +273,7 @@ Recommended build order to maintain a working state throughout:
 3. **Discount engine** — all 5 strategies, unit-tested
 4. **Cart CRUD** — create/get/add/update/remove, stock reservation logic
 5. **Checkout** — stock validation, order creation, reservation release
-6. **Cart expiry scheduler** — cron job + integration test
+6. **Cart expiry** — per-cart `setTimeout` in `CartService`; covered by unit tests with `jest.useFakeTimers`
 7. **BFF e2e tests** — full happy path and failure scenarios
 8. **Mobile scaffold** — Expo project, navigation, API client, stores
 9. **Product screens** — list + detail
