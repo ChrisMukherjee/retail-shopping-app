@@ -57,7 +57,7 @@ describe('CheckoutService', () => {
 
     await expect(svc.checkout('cart_test')).rejects.toMatchObject({ code: 'INSUFFICIENT_STOCK' });
     expect(deps.reservationService.releaseAll).toHaveBeenCalledWith(cart);
-    expect(cart.status).toBe('checked_out');
+    expect(cart.status).toBe('active');
   });
 
   it('throws CART_ALREADY_CHECKED_OUT on duplicate checkout', async () => {

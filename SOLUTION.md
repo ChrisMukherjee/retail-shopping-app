@@ -153,8 +153,8 @@ This is deliberate — the exercise explicitly prohibits a real database.
 ## Stock Reservation Lifecycle
 
 1. Adding an item to a cart immediately increments `stockReserved` on that product. The available quantity visible to other carts decreases accordingly.
-2. A NestJS `@Cron` job runs every 30 seconds. Any cart whose `lastActivityAt` is older than 2 minutes has its reservations released and its status set to `expired`.
-3. On checkout, **reservations are released first**, before stock is re-validated. This is intentional: if validation happened before releasing, the cart's own `stockReserved` would inflate the reserved count and make `stockAvailable` appear lower than it really is — causing a false-positive 409 on the customer's own items. Releasing first gives an accurate picture of what stock is genuinely available to others. On success, `stockTotal` is then decremented. On failure, reservations are not re-applied — the customer must re-add items to a new cart.
+2. Each cart schedules an exact 2-minute `setTimeout` on creation. Any mutation (add, update, remove) cancels the current timer and resets it. When the timer fires and `lastActivityAt` is 2+ minutes ago, reservations are released and the cart status is set to `expired`.
+3. On checkout, **reservations are released first**, before stock is re-validated. This is intentional: if validation happened before releasing, the cart's own `stockReserved` would inflate the reserved count and make `stockAvailable` appear lower than it really is — causing a false-positive 409 on the customer's own items. Releasing first gives an accurate picture of what stock is genuinely available to others. On success, `stockTotal` is decremented and the cart is marked `checked_out`. On failure, the cart remains active — the customer can adjust quantities and retry checkout.
 
 ---
 
@@ -200,3 +200,4 @@ Manual testing was carried out on Android only (via Android Studio emulator and 
 - **Estimated delivery** in the order summary is a simulated value: 3 business days from the confirmed date.
 - **Physical device testing** requires setting `EXPO_PUBLIC_API_URL` to the host machine's LAN IP (see above).
 - **`POST /carts`** creates the cart server-side and returns a UUID `cartId`. The client stores this in AsyncStorage and includes it in all subsequent cart requests.
+- **No `GET /discounts/:id` endpoint:** The brief mentions "Retrieve discount details" alongside "List active discounts", but the only consumer is the mobile app — and it has no screen or flow that requires fetching a single discount by ID. Discounts are applied automatically server-side; the cart response returns the applied discount inline. Implementing the endpoint would add API surface with no consumer, so it was deliberately omitted.

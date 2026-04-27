@@ -30,17 +30,10 @@ export class CheckoutService {
     if (cart.status === 'expired') throw new CartExpiredException(cartId);
     if (cart.status === 'checked_out') throw new CartAlreadyCheckedOutException(cartId);
 
-    const products = await Promise.all(
-      cart.items.map((item) => this.productRepo.findById(item.productId)),
-    );
-
     // Reservations must be released before validating stock. If we validated first,
     // the cart's own stockReserved would make stockAvailable appear lower than it is,
     // producing a false-positive INSUFFICIENT_STOCK on the customer's own items.
-    // Reservations are not re-applied on failure — the customer must start a new cart.
     await this.reservationService.releaseAll(cart);
-    cart.status = 'checked_out';
-    await this.cartRepo.save(cart);
 
     // Re-fetch after release so stockAvailable reflects the updated stockReserved values.
     const freshProducts = await Promise.all(
@@ -64,6 +57,9 @@ export class CheckoutService {
     if (stockIssues.length > 0) {
       throw new InsufficientStockException(stockIssues);
     }
+
+    cart.status = 'checked_out';
+    await this.cartRepo.save(cart);
 
     // Commit stock
     for (let i = 0; i < cart.items.length; i++) {
